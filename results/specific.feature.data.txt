@@ -1,0 +1,277 @@
+serovar	molecule_type	plasmid_id	count
+Infantis	chromosome		1
+Infantis	plasmid	AA474	34
+Infantis	plasmid	AA860	29
+Infantis	plasmid	AC724	2
+Infantis	plasmid	AA303	4
+Infantis	plasmid	AA627	3
+Infantis	plasmid	AA314	1
+Infantis	plasmid	AC358	1
+Infantis	plasmid	AC027	1
+Kentucky	chromosome		21
+Kentucky	plasmid	AA474	198
+Kentucky	plasmid	AC027	5
+Kentucky	plasmid	AA281	7
+Kentucky	plasmid	AA176	2
+Kentucky	plasmid	AA860	6
+Kentucky	plasmid	AA832	1
+Dublin	chromosome		21
+Dublin	plasmid	AA631	254
+Dublin	plasmid	AA627	353
+Dublin	plasmid	AA860	15
+Dublin	plasmid	AC723	18
+Dublin	plasmid	AF577	1
+Dublin	plasmid	AA626	1
+Reading	chromosome		0
+Reading	plasmid	AA860	23
+Reading	plasmid	AA474	7
+Agona	chromosome		3
+Agona	plasmid	AA474	35
+Agona	plasmid	AA627	27
+Agona	plasmid	AA860	81
+Typhimurium	chromosome		381
+Typhimurium	plasmid	AA858	6
+Typhimurium	plasmid	AA859	52
+Typhimurium	plasmid	AA474	243
+Typhimurium	plasmid	AA860	261
+Typhimurium	plasmid	AC723	1
+Typhimurium	plasmid	AA627	56
+Typhimurium	plasmid	AC027	3
+Typhimurium	plasmid	AB460	3
+Typhimurium	plasmid	AA619	1
+Typhimurium	plasmid	AA738	1
+Typhimurium	plasmid	AA631	7
+Typhimurium	plasmid	AC026	1
+Typhimurium	plasmid	AA315	1
+Typhimurium	plasmid	novel_8106ca6b37b09bdc06e3cf69c73ed590	1
+Typhimurium	plasmid	AC724	1
+Newport	chromosome		0
+Newport	plasmid	AA627	410
+Newport	plasmid	AA860	218
+Newport	plasmid	AA474	14
+Newport	plasmid	AA314	1
+Newport	plasmid	AC723	1
+Newport	plasmid	AA858	1
+Saintpaul	chromosome		1
+Saintpaul	plasmid	AA474	86
+Saintpaul	plasmid	AC724	1
+Saintpaul	plasmid	AA860	2
+Saintpaul	plasmid	AA738	7
+Montevideo	chromosome		0
+Montevideo	plasmid	AA860	11
+Montevideo	plasmid	AA474	11
+Montevideo	plasmid	AA627	3
+I E1:e,h:-	chromosome		0
+I E1:e,h:-	plasmid	AA474	1
+Uganda	chromosome		3
+Uganda	plasmid	AA860	23
+Uganda	plasmid	AA627	1
+Uganda	plasmid	AA474	1
+Derby	chromosome		1
+Derby	plasmid	AA474	46
+Derby	plasmid	AA860	3
+Derby	plasmid	AA738	1
+Derby	plasmid	AC027	1
+Anatum	chromosome		0
+Anatum	plasmid	AA474	22
+Anatum	plasmid	AC028	2
+Anatum	plasmid	AC027	2
+Anatum	plasmid	AA372	1
+Anatum	plasmid	AA860	1
+Albany	chromosome		0
+Albany	plasmid	AA474	17
+Albany	plasmid	AA627	1
+Bredeney	chromosome		1
+Bredeney	plasmid	AA474	3
+Bredeney	plasmid	AA860	3
+Bredeney	plasmid	AA627	6
+Bredeney	plasmid	AA473	1
+Heidelberg	chromosome		10
+Heidelberg	plasmid	AA474	310
+Heidelberg	plasmid	AA627	22
+Heidelberg	plasmid	AA859	29
+Heidelberg	plasmid	AA860	216
+Heidelberg	plasmid	AA858	3
+Heidelberg	plasmid	AA738	2
+Heidelberg	plasmid	AC027	3
+Heidelberg	plasmid	AA162	2
+Give	chromosome		0
+Give	plasmid	AA474	1
+Give	plasmid	AA860	2
+Brandenburg	chromosome		0
+Brandenburg	plasmid	AA474	10
+I 1,4,[5],12:i:-	chromosome		9
+I 1,4,[5],12:i:-	plasmid	AA474	58
+I 1,4,[5],12:i:-	plasmid	AA860	18
+I 1,4,[5],12:i:-	plasmid	AA627	20
+I 1,4,[5],12:i:-	plasmid	AA631	1
+I 1,4,[5],12:i:-	plasmid	AA619	1
+I 1,4,[5],12:i:-	plasmid	AC027	1
+I 1,4,[5],12:i:-	plasmid	AA316	2
+I 1,4,[5],12:i:-	plasmid	AB460	1
+Albert	chromosome		0
+Albert	plasmid	AA627	4
+Indiana	chromosome		0
+Indiana	plasmid	AA474	1
+Enteritidis	chromosome		0
+Enteritidis	plasmid	AA474	21
+Enteritidis	plasmid	AA860	7
+Enteritidis	plasmid	AA627	1
+Enteritidis	plasmid	AA473	6
+Enteritidis	plasmid	AA281	1
+Altona	chromosome		0
+Altona	plasmid	AA474	3
+Ohio	chromosome		0
+Ohio	plasmid	AA860	14
+Ohio	plasmid	AA627	3
+Ohio	plasmid	AC723	1
+Ohio	plasmid	AA619	1
+Braenderup	chromosome		0
+Braenderup	plasmid	AA474	24
+Braenderup	plasmid	AA627	1
+Alachua	chromosome		0
+Alachua	plasmid	AA627	4
+Alachua	plasmid	AA474	6
+Alachua	plasmid	AA860	1
+Schwarzengrund	chromosome		1
+Schwarzengrund	plasmid	AA474	5
+Schwarzengrund	plasmid	AA314	1
+Stanleyville	chromosome		0
+Stanleyville	plasmid	AA474	1
+Minnesota	chromosome		0
+Minnesota	plasmid	AA859	5
+Minnesota	plasmid	AA474	9
+Minnesota	plasmid	AC027	5
+Javiana	chromosome		0
+Javiana	plasmid	AA474	3
+Kintambo	chromosome		0
+Kintambo	plasmid	AA372	1
+Johannesburg	chromosome		0
+Johannesburg	plasmid	AA860	1
+Johannesburg	plasmid	AA627	1
+Johannesburg	plasmid	AA474	6
+Agbeni	chromosome		0
+Agbeni	plasmid	AA474	5
+Agbeni	plasmid	AC977	1
+Berta	chromosome		0
+Berta	plasmid	AA474	10
+I 1,4,[5],12:r:-	chromosome		0
+I 1,4,[5],12:r:-	plasmid	AA474	3
+I 1,4,[5],12:r:-	plasmid	AA859	1
+I 1,4,[5],12:r:-	plasmid	AA860	7
+I B:e,h:-	chromosome		0
+I B:e,h:-	plasmid	AA474	1
+Senftenberg	chromosome		9
+Senftenberg	plasmid	AA474	6
+Senftenberg	plasmid	AA860	4
+Senftenberg	plasmid	AA627	1
+Senftenberg	plasmid	AA314	1
+Abony	chromosome		0
+Abony	plasmid	AA474	1
+Mbandaka	chromosome		0
+Mbandaka	plasmid	AA474	6
+Mbandaka	plasmid	AA860	4
+Mbandaka	plasmid	AA627	1
+Kedougou	chromosome		0
+Kedougou	plasmid	AA474	1
+Worthington	chromosome		0
+Worthington	plasmid	AA474	9
+Worthington	plasmid	AA627	1
+Muenchen	chromosome		0
+Muenchen	plasmid	AA474	10
+Muenchen	plasmid	AC027	1
+I 1,4,[5],12:d:-	chromosome		0
+I 1,4,[5],12:d:-	plasmid	AA474	1
+Litchfield	chromosome		0
+Litchfield	plasmid	AA474	9
+Rubislaw	chromosome		0
+Rubislaw	plasmid	AA314	1
+Rubislaw	plasmid	AA474	1
+Stanley	chromosome		1
+Stanley	plasmid	AA474	1
+Stanley	plasmid	AA860	1
+Stanley	plasmid	AA738	1
+Hadar	chromosome		0
+Hadar	plasmid	AA474	4
+Hadar	plasmid	AA860	1
+Hvittingfoss	chromosome		0
+Hvittingfoss	plasmid	AA314	1
+Weltevreden	chromosome		0
+Weltevreden	plasmid	AA315	2
+Weltevreden	plasmid	AA474	1
+Rissen	chromosome		0
+Rissen	plasmid	AA474	2
+Thompson	chromosome		0
+Thompson	plasmid	AA627	9
+Thompson	plasmid	AA860	1
+Thompson	plasmid	AA474	1
+Cerro	chromosome		0
+Cerro	plasmid	AA474	3
+Choleraesuis	chromosome		0
+Choleraesuis	plasmid	AA595	1
+Choleraesuis	plasmid	AA627	1
+Livingstone	chromosome		0
+Livingstone	plasmid	AA860	2
+Livingstone	plasmid	AA627	1
+Havana	chromosome		0
+Havana	plasmid	AA627	1
+Havana	plasmid	AA474	2
+Muenster	chromosome		0
+Muenster	plasmid	AA860	2
+Muenster	plasmid	AA627	3
+Corvallis	chromosome		1
+Corvallis	plasmid	AA474	1
+Corvallis	plasmid	AA860	1
+Edinburg	chromosome		0
+Edinburg	plasmid	AA474	1
+Blockley	chromosome		0
+Blockley	plasmid	AA474	2
+Paratyphi B var. Java	chromosome		0
+Paratyphi B var. Java	plasmid	AA474	2
+Mississippi	chromosome		0
+Mississippi	plasmid	AA314	1
+Mississippi	plasmid	AA474	2
+London	chromosome		0
+London	plasmid	AA474	4
+London	plasmid	AC027	1
+I B:l,v:-	chromosome		1
+I B:l,v:-	plasmid	AA474	2
+Bovismorbificans	chromosome		0
+Bovismorbificans	plasmid	AA474	1
+Langensalza	chromosome		0
+Langensalza	plasmid	AA474	1
+Liverpool	chromosome		0
+Liverpool	plasmid	AA474	1
+Putten	chromosome		0
+Putten	plasmid	AA860	1
+Adelaide	chromosome		0
+Adelaide	plasmid	AA474	1
+I C1:z10:-	chromosome		0
+I C1:z10:-	plasmid	AA474	1
+I Z:e,h:-	chromosome		0
+I Z:e,h:-	plasmid	AA474	1
+Kiambu	chromosome		0
+Kiambu	plasmid	AA474	1
+I C1:r:-	chromosome		1
+I C1:r:-	plasmid	AA860	1
+I 1,4,[5],12:b:-	chromosome		0
+I 1,4,[5],12:b:-	plasmid	AA314	1
+I 1,4,[5],12:b:-	plasmid	AA474	1
+Oranienburg	chromosome		0
+Oranienburg	plasmid	AA474	3
+I D1:l,z28:-	chromosome		0
+I D1:l,z28:-	plasmid	AA474	1
+Ajiobo	chromosome		0
+Ajiobo	plasmid	AA474	1
+Woodinville	chromosome		0
+Woodinville	plasmid	AA314	1
+Orion	chromosome		0
+Orion	plasmid	AA474	1
+I E1:y:-	chromosome		0
+I E1:y:-	plasmid	AA474	1
+I C2-C3:i:-	chromosome		0
+I C2-C3:i:-	plasmid	AA474	1
+Cotham	chromosome		0
+Cotham	plasmid	AA860	1
+IIIa 18:z4,z23:-	chromosome		0
+IIIa 18:z4,z23:-	plasmid	AA860	1
