@@ -1,17 +1,14 @@
 #!/usr/bin/env python
-import logging
 import os
 import sys
-from argparse import (ArgumentParser, FileType)
+from argparse import (ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter)
 import pandas as pd
 from sklearn.metrics import adjusted_mutual_info_score,adjusted_rand_score
 from scipy.stats import entropy
-from statistics import mean
 from skbio.diversity.alpha import simpson
-from collections import Counter
 import scipy.stats as stats
 import skbio.diversity.alpha as alpha
-import scipy
+
 
 
 def calc_MI(category_1,category_2):
@@ -36,23 +33,29 @@ def calc_adjusted_rand(category_1,category_2):
 
 def parse_args():
     "Parse the input arguments, use '-h' for help"
-    parser = ArgumentParser(description='Filter overlapping queries')
+    class CustomFormatter(ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter):
+        pass
+    parser = ArgumentParser(
+        description="Process result files from different tools for visualization of plasmid dynamic",
+        formatter_class=CustomFormatter)
     parser.add_argument('--abricate', type=str, required=True, help='Abricate report')
     parser.add_argument('--contigs', type=str, required=True, help='MOB-suite contig report')
     parser.add_argument('--mobtyper', type=str, required=True, help='MOB-suite mobtyper report')
     parser.add_argument('--metadata', type=str, required=True, help='Sample metadata')
+    parser.add_argument('--gene_id', type=str, required=False, help='Sample metadata',default='blaCMY-2')
     parser.add_argument('--outdir', type=str, required=True, help='Output results to this directory')
     return parser.parse_args()
 
 
 def read_data_into_df(file):
-    return pd.read_csv(file,header=0, encoding = "UTF-8",sep="\t")
+    return pd.read_csv(file,header=0, encoding = "UTF-8",sep="\t",low_memory=False)
 
-def process_abricate(file):
+def process_abricate(file,feat_id='blaCMY-2'):
     data = read_data_into_df(file)
     records = {}
+    mapping = {}
+    gene_samples = {}
     for index, row in data.iterrows():
-
         sample_id = row['#FILE']
         contig_id = str(row['SEQUENCE'])
         gene_id = row['GENE']
@@ -63,7 +66,12 @@ def process_abricate(file):
         if not contig_id in records[sample_id]:
             records[sample_id][contig_id] = {}
         records[sample_id][contig_id][gene_id] = resistance
-    return records
+        mapping[gene_id] = resistance
+        if gene_id == feat_id:
+            if not sample_id in gene_samples:
+                gene_samples[sample_id] = []
+            gene_samples[sample_id].append(contig_id)
+    return {'records':records,'mapping':mapping,'target_samples':gene_samples}
 
 def process_contigs(file):
     data = read_data_into_df(file)
@@ -173,7 +181,6 @@ def associate_genes_with_plasmids(abricate,contigs):
     counts = {}
     for sample_id in abricate:
         if not sample_id in contigs:
-            #print("skip...{}...not in contigs".format(sample_id))
             continue
 
         for contig_id in abricate[sample_id]:
@@ -187,6 +194,10 @@ def associate_genes_with_plasmids(abricate,contigs):
 
             if not molecule_type  in contigs[sample_id]:
                 continue
+            if not contig_id in contigs[sample_id][molecule_type]:
+                continue
+
+
 
             for gene_id in abricate[sample_id][contig_id]:
                 if not gene_id in counts:
@@ -197,9 +208,6 @@ def associate_genes_with_plasmids(abricate,contigs):
                 if molecule_type == 'chromosome':
                     counts[gene_id]['chromosome']+=1
                 else:
-                    if gene_id == 'tet(G)':
-                        print("====>{}".format(sample_id))
-                        print(contigs[sample_id][molecule_type][contig_id])
 
                     clust_id = contigs[sample_id][molecule_type][contig_id]['primary_cluster_id']
                     if not clust_id in counts[gene_id]['plasmid']:
@@ -232,116 +240,6 @@ def associate_serovars_with_plasmids(metadata,contigs):
             counts[serovar]['plasmids'][primary_cluster_id] =0
         counts[serovar]['plasmids'][primary_cluster_id]+=1
     return counts
-
-def build_plasmid_serovar_network(serovar_plasmid_associations):
-    nodes = {}
-    serovar_list = list(serovar_plasmid_associations.keys())
-    for i in range(0,len(serovar_list)):
-        serovar_1 = serovar_list[i]
-        if not serovar_1 in nodes:
-            nodes[serovar_1] = {}
-        plasmids_1 = list(serovar_plasmid_associations[serovar_1]['plasmids'].keys())
-        for k in range(i+1,len(serovar_list)):
-            serovar_2 = serovar_list[k]
-            if not serovar_2 in nodes[serovar_1]:
-                nodes[serovar_1][serovar_2] = 0
-            plasmids_2 = list(serovar_plasmid_associations[serovar_2]['plasmids'].keys())
-            shared_plasmids = len(set(plasmids_1).intersection( set(plasmids_2)))
-            if shared_plasmids > 0:
-                nodes[serovar_1][serovar_2] += shared_plasmids
-
-    edges = {}
-
-    for s1 in nodes:
-        for s2 in nodes[s1]:
-            value = nodes[s1][s2]
-            if value > 0:
-                if not s1 in edges:
-                    edges[s1] = {}
-                edges[s1][s2] = value
-    return edges
-
-def build_plasmid_gene_network(gene_counts,gene_plasmid_associations):
-
-    edges = {}
-    gene_list = list(gene_counts.keys())
-    #print(gene_plasmid_associations)
-    for i in range(0, len(gene_list)):
-        gene1 = gene_list[i]
-
-        if not gene1 in gene_plasmid_associations:
-            # print("skip {}".format(gene1))
-            continue
-
-        plasmids_1 = list(gene_plasmid_associations[gene1]['plasmid'].keys())
-        if len(plasmids_1) <= 1:
-            continue
-       # print(plasmids_1)
-        for k in range(0, len(plasmids_1) - 1):
-            p1 = plasmids_1[k]
-            p2 = plasmids_1[k + 1]
-
-            if not p1 in edges:
-                edges[p1] = {}
-
-            if not p2 in edges[p1]:
-                edges[p1][p2] = 0
-
-            edges[p1][p2] += 1
-    #print(edges)
-    return edges
-
-
-def build_gene_plasmid_network(gene_counts,gene_plasmid_associations):
-    edges = {}
-    gene_list = list(gene_counts.keys())
-    for i in range(0,len( gene_list)):
-        gene1 = gene_list[i]
-
-        if not gene1 in gene_plasmid_associations:
-           # print("skip {}".format(gene1))
-            continue
-        plasmids_1 = gene_plasmid_associations[gene1]['plasmid']
-        if len(plasmids_1) == 0:
-           # print("skip {} no plasmids".format(gene1))
-            #print(gene_plasmid_associations[gene1])
-
-            continue
-        for k in range(i+1,len(gene_list)):
-            gene2 = gene_list[k]
-            if not gene2 in gene_plasmid_associations:
-                continue
-            plasmids_2 = gene_plasmid_associations[gene2]['plasmid']
-            if len(plasmids_2) == 0:
-                continue
-
-            if not gene1 in edges:
-                edges[gene1] = {}
-
-            if not gene2 in edges[gene1]:
-                edges[gene1][gene2] = 0
-
-            edges[gene1][gene2] = len(set(plasmids_1).intersection(set(plasmids_2)))
-
-    return edges
-
-
-
-def write_plasmid_network_files(outdir,serovar_counts,edges,nodes_filename,edges_filename):
-    edge_file = open(os.path.join(outdir,edges_filename),'w')
-    nodes_file = open(os.path.join(outdir, nodes_filename), 'w')
-    nodes_file.write("{}\t{}\n".format("id","size"))
-    for serovar in serovar_counts:
-        nodes_file.write("{}\t{}\n".format(serovar,serovar_counts[serovar]))
-    nodes_file.close()
-
-    edge_file.write("{}\t{}\t{}\n".format("Source", "Target","Weight"))
-    for s1 in edges:
-        for s2 in edges[s1]:
-            edge_file.write("{}\t{}\t{}\n".format(s1,s2,edges[s1][s2]))
-
-    edge_file.close()
-
 
 def get_plasmid_counts(contigs):
     counts = {}
@@ -458,6 +356,7 @@ def mobtyper_plasmid_summarize(mobtyper):
             data = plasmids[plasmid_id]
             if not plasmid_id in summary:
                 summary[plasmid_id] = {
+                'plasmid_id':plasmid_id,
                 'replicons':{},
                 'relaxases':{},
                 'overall_mobility':'',
@@ -528,7 +427,7 @@ def mobtyper_plasmid_summarize(mobtyper):
                 if not field_id in summary[plasmid_id]:
                     continue
 
-                if field_id == 'associated_taxa':
+                if field_id in ['associated_taxa','resistance_genes']:
                     for v in value:
                         if v == '' or v == 'nan':
                             continue
@@ -536,8 +435,7 @@ def mobtyper_plasmid_summarize(mobtyper):
                             summary[plasmid_id][field_id][v] = 0
                         summary[plasmid_id][field_id][v] += 1
                     continue
-                if field_id in ('resistance_genes'):
-                    continue
+
 
                 if not value in summary[plasmid_id][field_id]:
                     summary[plasmid_id][field_id][value] = 0
@@ -568,9 +466,7 @@ def mobtyper_plasmid_summarize(mobtyper):
             summary[plasmid_id]['serovar_simpson_index'] = alpha.simpson(serovar_counts)
             summary[plasmid_id]['serovar_simpson_index_e'] = alpha.simpson_e(serovar_counts)
             summary[plasmid_id]['serovar_chao1'] = alpha.chao1(serovar_counts)
-        else:
-            print("{}\t{}".format(plasmid_id,sum(serovar_counts)))
-            print(summary[plasmid_id])
+
         human_removed_taxa = {}
         for taxon in summary[plasmid_id]['associated_taxa']:
             if taxon == 'homo sapiens':
@@ -596,6 +492,7 @@ def serovar_metadata_summary(metadata):
             serovar = 'unknown'
         if not serovar in serovar_info:
             serovar_info[serovar] = {
+            'serovar':serovar,
             'continent':{},
             'country':{},
             'primary_sample_category':{},
@@ -604,6 +501,8 @@ def serovar_metadata_summary(metadata):
             'year':{},
             'samples':[],
             'total_samples':0,
+            'count_plasmid_negative_samples':0,
+            'count_plasmid_positive_samples':0,
             'plasmids':{},
             'num_resistant': 0,
             'proportion_resistant': 0,
@@ -626,6 +525,8 @@ def serovar_metadata_summary(metadata):
 
 
         for field_id in data:
+            if field_id == 'serovar':
+                continue
             value = data[field_id]
             if value == 'nan' or value == '':
                 value = 'unknown'
@@ -685,6 +586,17 @@ def add_plasmids_to_serovar(mobtyper,serovar_data):
                 serovar_data[serovar]['plasmids'][plasmid_id]+=1
     return serovar_data
 
+def add_plasmid_freq(serovar_data,mobtyper,metadata):
+    for sample_id in mobtyper:
+        if not sample_id in metadata:
+            continue
+        serovar = metadata[sample_id]['serovar']
+        if serovar in serovar_data:
+            serovar_data[serovar]['count_plasmid_positive_samples']+=1
+    for serovar in serovar_data:
+        serovar_data[serovar]['count_plasmid_negative_samples'] = serovar_data[serovar]['total_samples'] - serovar_data[serovar]['count_plasmid_positive_samples']
+    return serovar_data
+
 def add_diversity_data_to_serovar(serovar_data):
     for serovar in serovar_data:
         human_removed_taxa = {}
@@ -712,13 +624,14 @@ def add_diversity_data_to_serovar(serovar_data):
 
     return  serovar_data
 
-def write_gene_results(gene_plasmid_associations,molecule_type_gene_association,gene_serovar_associations):
-    print(">>>>>>>>>>>>>>>>>>>>>")
-    print("gene_id\tplasmid\tchromosome\ttotal\t"
+def write_gene_results(gene_plasmid_associations,molecule_type_gene_association,gene_serovar_associations,mapping,outfile):
+    fh = open(outfile,'w')
+    fh.write("gene_id\tplasmid\tchromosome\ttotal\t"
           "proportion\tplasmid homogeneity\tserovar homogeneity\t"
-          "plasmid entropy\tserovar entropy\thuman proportion")
+          "plasmid entropy\tserovar entropy\thuman proportion\tresistance\n")
 
     for gene_id in molecule_type_gene_association:
+        resistance = mapping[gene_id]
         plasmid_count = int(molecule_type_gene_association[gene_id]['plasmid'])
         chr_count = int(molecule_type_gene_association[gene_id]['chromosome'])
         total = plasmid_count + chr_count
@@ -740,7 +653,7 @@ def write_gene_results(gene_plasmid_associations,molecule_type_gene_association,
             human_proportion = -1
             sentropy = -1
 
-        print("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(gene_id,
+        fh.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(gene_id,
                                                               plasmid_count,
                                                               chr_count,
                                                               total,
@@ -749,73 +662,12 @@ def write_gene_results(gene_plasmid_associations,molecule_type_gene_association,
                                                               shomogeneity,
                                                               pentropy,
                                                               sentropy,
-                                                              human_proportion))
+                                                              human_proportion,resistance))
+    fh.close()
 
-def write_dict(data):
-
-    header = ['key']
-    for key in data:
-        fields = data[key].keys()
-        for f in fields:
-            if f == 'samples' or f == 'plasmids':
-                continue
-            header.append(f)
-        break
-    print(">>>>>>>>>>>>>>>>>>>>>>>>>")
-    print("{}".format("\t".join(header)))
-    for key in data:
-        data[key]['key'] = key
-
-
-        row = []
-        for f in header:
-            if f in data[key]:
-
-                row.append("{}".format(data[key][f]))
-            else:
-                row.append('nan')
-        print("{}".format("\t".join(row)))
-        #if key == 'Rubislaw':
-         #   print (data[key])
-          #  print(row)
-           # sys.exit()
-
-def calc_pairwise_jacard(data,field_id):
-    sample_keys = list(data.keys())
-    num_samples = len(sample_keys)
-    distances = {}
-    for i in range(0,num_samples):
-        sample_id_1 = sample_keys[i]
-        samples_1 = data[sample_id_1][field_id]
-        if not sample_id_1 in distances:
-            distances[sample_id_1] = {}
-        for k in range(i,num_samples):
-            sample_id_2 = sample_keys[k]
-            samples_2 = data[sample_id_2][field_id]
-            sample_union = set(samples_1).union(set(samples_2) )
-            sample_intersection = set(samples_1).intersection(set(samples_2) )
-            if len(sample_union) > 0:
-                jaccard = 1 - len(sample_intersection)/len(sample_union)
-            else:
-                jaccard = 1
-            distances[sample_id_1][sample_id_2] = jaccard
-    return distances
-
-def write_distance_matrix(data):
-    sample_keys = list(data.keys())
-    num_samples = len(sample_keys)
-    print("\t{}".format("\t".join(sample_keys)))
-    for i in range(0,num_samples):
-        sample_id_1 = sample_keys[i]
-        row = [""] * (i+1)
-        for k in range(i,num_samples):
-            sample_id_2 = sample_keys[k]
-            distance = data[sample_id_1][sample_id_2]
-            row.append(distance)
-        print("{}{}".format(sample_id_1,'\t'.join(str(x) for x in row)))
-
-
-
+def write_dict(data,outfile):
+    df = pd.DataFrame.from_dict(data,orient='index')
+    df.to_csv(outfile,sep="\t",header=True,index=False)
 
 def add_plasmid_proportion(serovar_data,mobtyper):
     for serovar in serovar_data:
@@ -827,47 +679,92 @@ def add_plasmid_proportion(serovar_data,mobtyper):
                 break
     return serovar_data
 
+def create_specific_gene_info(contigs,metadata,target_samples,outfile):
+    data = {}
+    for sample_id in target_samples:
+        if not sample_id in contigs or not sample_id in metadata:
+            continue
+        target_contigs = target_samples[sample_id]
+        serovar = metadata[sample_id]['serovar']
+        if not serovar in data:
+            data[serovar] = {
+                'chromosome':0,
+                'plasmid':{}
+            }
+
+        for contig_id in target_contigs:
+            if not 'chromosome' in contigs[sample_id]:
+                continue
+            if contig_id in contigs[sample_id]['chromosome']:
+                molecule_type = 'chromosome'
+            else:
+                molecule_type = 'plasmid'
+            if molecule_type == 'plasmid':
+                clust_id = contigs[sample_id][molecule_type][contig_id]['primary_cluster_id']
+                if not clust_id in data[serovar]['plasmid']:
+                    data[serovar]['plasmid'][clust_id]= 0
+                data[serovar]['plasmid'][clust_id] += 1
+            else:
+                data[serovar]['chromosome']+=1
+    fh = open(outfile,'w')
+    fh.write("serovar\tmolecule_type\tplasmid_id\tcount\n")
+    for serovar in data:
+        fh.write("{}\t{}\t{}\t{}\n".format(serovar,'chromosome','',data[serovar]['chromosome']))
+        for clust_id in data[serovar]['plasmid']:
+            fh.write("{}\t{}\t{}\t{}\n".format(serovar, 'plasmid', clust_id, data[serovar]['plasmid'][clust_id]))
+    fh.close()
+    return data
+
+
+
 def main():
     args = parse_args()
-    mobtyper = process_mobtyper(args.mobtyper)
-    metadata = process_metadata(args.metadata)
-    mobtyper = add_metadata_to_mobtyper(mobtyper, metadata)
-
 
     outdir = args.outdir
+    # initialize analysis directory
+    if not os.path.isdir(args.outdir):
+        print("Creating output directory {}".format(args.outdir))
+        os.mkdir(args.outdir, 0o755)
 
+    print("Reading sample metadata file {}".format(args.metadata))
+    metadata = process_metadata(args.metadata)
     serovar_data = serovar_metadata_summary(metadata)
 
-    abricate = process_abricate(args.abricate)
+    print("Reading MOB-typer file {}".format(args.mobtyper))
+    mobtyper = process_mobtyper(args.mobtyper)
 
+    print("Merging MOB-typer with Sample metadata")
+    mobtyper = add_metadata_to_mobtyper(mobtyper, metadata)
+
+    print("Adding plasmid counts by serovar")
+    serovar_data = add_plasmid_freq(serovar_data,mobtyper,metadata)
+
+    print("Reading abricate file {}".format(args.abricate))
+    abricate_results = process_abricate(args.abricate)
+    abricate = abricate_results['records']
+    mapping = abricate_results['mapping']
+
+    print("Reading MOB-recon contigs file {}".format(args.contigs))
     contigs = process_contigs(args.contigs)
 
+    print("Merging plasmid and abricate results")
     mobtyper = add_resistance_genes(abricate, mobtyper, contigs)
-
     plasmid_summary = mobtyper_plasmid_summarize(mobtyper)
 
+
+    create_specific_gene_info(contigs, metadata, abricate_results['target_samples'], os.path.join(outdir,"specific.feature.data.txt"))
+
+    print("Performing diversity estimates")
     serovar_data = add_diversity_data_to_serovar(add_plasmids_to_serovar(mobtyper,add_resgenes_to_serovar_summary(abricate,serovar_data)))
     serovar_data = add_plasmid_proportion(serovar_data,mobtyper)
-    write_dict(plasmid_summary)
-    write_dict(serovar_data)
-    write_distance_matrix(calc_pairwise_jacard(plasmid_summary,'samples'))
-    write_distance_matrix(calc_pairwise_jacard(serovar_data, 'plasmids'))
-
-
+    write_dict(plasmid_summary,os.path.join(outdir,"plasmid.summary.txt"))
+    write_dict(serovar_data,os.path.join(outdir,"serovar.summary.txt"))
     gene_plasmid_associations = associate_genes_with_plasmids(abricate,contigs)
     molecule_type_gene_association = get_gene_molecule_associations(gene_plasmid_associations)
     gene_serovar_associations = associate_genes_serovars(abricate,metadata)
-
-    write_gene_results(gene_plasmid_associations, molecule_type_gene_association, gene_serovar_associations)
-
-
-    sys.exit()
+    write_gene_results(gene_plasmid_associations, molecule_type_gene_association, gene_serovar_associations,mapping,os.path.join(outdir,"genes.summary.txt"))
 
 
-
-
-
-
-
-main()
+if __name__== '__main__':
+    main()
 
