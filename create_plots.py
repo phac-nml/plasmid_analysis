@@ -43,12 +43,18 @@ def resistance_gene_sunburst(df):
     fig.update_traces(textinfo="label+value")
 
     fig.update_layout(
-        font=dict(
-            size=14,
-        ),
         coloraxis_colorbar_title='Proportion plasmid',
         coloraxis_colorbar_x=1
 
+    )
+    fig.update_layout(
+        font=dict(
+            size=16,
+        ),
+    )
+    fig.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        template="simple_white",
     )
 
     return fig
@@ -68,8 +74,12 @@ def resistance_gene_scatter(df):
 
     fig.update_layout(
         font=dict(
-            size=14,
-        )
+            size=16,
+        ),
+    )
+    fig.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        template="simple_white",
     )
 
     return fig
@@ -87,9 +97,6 @@ def plasmid_mobility_scater(df):
                      hover_name="plasmid_id", log_y=True, size_max=60, marginal_x="box", marginal_y="box")
 
     fig.update_layout(
-        font=dict(
-            size=14,
-        ),
         legend=dict(
             orientation="h",
             yanchor="bottom",
@@ -97,12 +104,21 @@ def plasmid_mobility_scater(df):
             xanchor="right",
             x=1
         ))
+    fig.update_layout(
+        font=dict(
+            size=16,
+        ),
+    )
+    fig.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        template="simple_white",
+    )
     return fig
 
 def plasmid_resistance_scatter(df):
     df = df[df['total_samples'] > 10]
     df = df[df['serovar_entropy'] >= 0]
-    fig = px.scatter(df, x="proportion_resistant", y="serovar_entropy",
+    fig = px.scatter(df, x="serovar_entropy", y="proportion_resistant",
                      size='total_samples', color='overall_mobility',
                      labels={
                          "proportion_resistant": "Proportion resistant",
@@ -112,9 +128,6 @@ def plasmid_resistance_scatter(df):
                      hover_name="plasmid_id", log_y=False, size_max=60)
 
     fig.update_layout(
-        font=dict(
-            size=14,
-        ),
         legend=dict(
             orientation="h",
             yanchor="bottom",
@@ -122,17 +135,30 @@ def plasmid_resistance_scatter(df):
             xanchor="right",
             x=1)
     )
+    fig.update_layout(
+        font=dict(
+            size=16,
+        ),
+    )
+    fig.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        template="simple_white",
+    )
     return fig
 
-def serovar_plasmid_frac_bar(df):
-    df.to_csv("/Users/jrobertson/Desktop/plasmid_counts.txt",header=True,sep='\t')
+def serovar_plasmid_frac_bar(df,outfile):
+    df.to_csv(outfile,header=True,sep='\t')
     fig = px.bar(df, x="serovar",
                  y=["positive", "negative"], log_y=True,
                  color_discrete_map={
                      "positive": "#2978A0", "negative": "#F17300"
                  },
                  )
-
+    fig.update_layout(
+        font=dict(
+            size=16,
+        ),
+    )
     fig.update_layout(
         legend_title="Plasmid presence",
         paper_bgcolor='rgba(0,0,0,0)',
@@ -165,13 +191,13 @@ def collapse_serovars(df,num_serovars=10):
 
 def vignette_sunburst(df):
     path = ['serovar',
-            'molecule_type','plasmid_id' ]
+            'molecule_type','primary_id','secondary_id' ]
 
     fig = px.sunburst(
         data_frame=df,
         path=path,
         values='count',
-        maxdepth=3,
+        maxdepth=4,
 
     )
 
@@ -182,10 +208,12 @@ def vignette_sunburst(df):
 
     fig.update_layout(
         font=dict(
-            size=14,
+            size=16,
         ),
-
-
+    )
+    fig.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        template="simple_white",
     )
 
     return fig
@@ -197,7 +225,7 @@ def main():
     # initialize analysis directory
     if not os.path.isdir(args.outdir):
         logging.info("Creating output directory {}".format(args.outdir))
-        os.mkdir(args.outdir, 0o755)
+        os.makedirs(args.outdir, 0o755)
 
     #Figure files
     figure_1 = os.path.join(outdir,"Figure.1.html")
@@ -206,6 +234,7 @@ def main():
     figure_4 = os.path.join(outdir, "Figure.4.html")
     figure_5 = os.path.join(outdir, "Figure.5.html")
     figure_6 = os.path.join(outdir, "Figure.6.html")
+    serovar_perc_file = os.path.join(outdir, "plasmid.frac.txt")
 
     #Read data
     gene_df = read_sample_data(args.genes)
@@ -214,7 +243,7 @@ def main():
     spec_gene_df = read_sample_data(args.vignette)
 
     #Figure 1 - Plasmid prevelance in different serotypes
-    fig1 = serovar_plasmid_frac_bar(collapse_serovars(serovar_df))
+    fig1 = serovar_plasmid_frac_bar(collapse_serovars(serovar_df),serovar_perc_file)
     fh = open(figure_1,'w')
     fh.write(fig1.to_html())
     fh.close()

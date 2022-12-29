@@ -78,7 +78,11 @@ def process_contigs(file):
     records = {}
     for index, row in data.iterrows():
         sample_id = row['sample_id']
-        contig_id = str(row['contig_id'].split("_")[0])
+        def_line = row['contig_id'].split("_")
+        if len(def_line) == 1:
+            def_line = row['contig_id'].split(" ")
+        contig_id = str(def_line[0])
+
         molecule_type = row['molecule_type']
         size = row['size']
         rep_type = row['rep_type(s)']
@@ -131,6 +135,8 @@ def process_mobtyper(file):
             'serovar':'',
             'resistance_genes':{},
         }
+    if row['mash_neighbor_distance'] > 0.025:
+        records[sample_id][plasmid_id]['secondary_cluster_id'] = '-'
 
     return records
 
@@ -316,6 +322,8 @@ def add_resistance_genes(abricate,mobtyper,contigs):
                 continue
 
             plasmid_id = contigs[sample_id]['plasmid'][contig_id]['primary_cluster_id']
+            if not plasmid_id in mobtyper[sample_id]:
+                continue
             for gene_id in abricate[sample_id][contig_id]:
                 if not gene_id in mobtyper[sample_id][plasmid_id]['resistance_genes']:
                     mobtyper[sample_id][plasmid_id]['resistance_genes'][gene_id] = 0
@@ -700,20 +708,68 @@ def create_specific_gene_info(contigs,metadata,target_samples,outfile):
             else:
                 molecule_type = 'plasmid'
             if molecule_type == 'plasmid':
+                if contig_id not in contigs[sample_id][molecule_type]:
+                    continue
                 clust_id = contigs[sample_id][molecule_type][contig_id]['primary_cluster_id']
+                sec_clust_id = contigs[sample_id][molecule_type][contig_id]['secondary_cluster_id']
                 if not clust_id in data[serovar]['plasmid']:
-                    data[serovar]['plasmid'][clust_id]= 0
-                data[serovar]['plasmid'][clust_id] += 1
+                    data[serovar]['plasmid'][clust_id]= {}
+                if not sec_clust_id in data[serovar]['plasmid'][clust_id]:
+                    data[serovar]['plasmid'][clust_id][sec_clust_id] = 0
+                data[serovar]['plasmid'][clust_id][sec_clust_id] += 1
             else:
                 data[serovar]['chromosome']+=1
     fh = open(outfile,'w')
-    fh.write("serovar\tmolecule_type\tplasmid_id\tcount\n")
+    fh.write("serovar\tmolecule_type\tprimary_id\tsecondary_id\tcount\n")
     for serovar in data:
-        fh.write("{}\t{}\t{}\t{}\n".format(serovar,'chromosome','',data[serovar]['chromosome']))
+        fh.write("{}\t{}\t{}\t{}\t{}\n".format(serovar,'chromosome','-','-',data[serovar]['chromosome']))
         for clust_id in data[serovar]['plasmid']:
-            fh.write("{}\t{}\t{}\t{}\n".format(serovar, 'plasmid', clust_id, data[serovar]['plasmid'][clust_id]))
+            for secondary_clust_id in data[serovar]['plasmid'][clust_id]:
+                fh.write("{}\t{}\t{}\t{}\t{}\n".format(serovar, 'plasmid', clust_id, secondary_clust_id, data[serovar]['plasmid'][clust_id][secondary_clust_id]))
     fh.close()
     return data
+
+def write_replicon_relaxase(mobtyper,outfile):
+    replicons = set()
+    relaxases = set()
+    for sample_id in mobtyper:
+        plasmids = mobtyper[sample_id]
+        for plasmid_id in plasmids:
+            data = plasmids[plasmid_id]
+            rep = set(data['rep_type(s)'].split(","))
+            replicons = replicons | rep
+            mob = set(data['relaxase_type(s)'].split(","))
+            relaxases = relaxases | mob
+    replicons = list(replicons)
+    relxases = sorted(list(relaxases))
+    counts = {}
+    for r in replicons:
+        counts[r] = {}
+        for m in relaxases:
+            counts[r][m] = 0
+    for sample_id in mobtyper:
+        plasmids = mobtyper[sample_id]
+        for plasmid_id in plasmids:
+            data = plasmids[plasmid_id]
+            rep = data['rep_type(s)'].split(",")
+            mob = data['relaxase_type(s)'].split(",")
+            for r in rep:
+                for m in mob:
+                    counts[r][m]+=1
+
+    fh = open(outfile,'w')
+
+    fh.write("replicon\t{}\ttotal\n".format("\t".join(relaxases)))
+    for replicon in counts:
+        row = [replicon]
+        total = 0
+        for m in relaxases:
+            row.append(counts[replicon][m])
+            total += counts[replicon][m]
+        row.append(total)
+        fh.write("{}\n".format("\t".join([str(x) for x in row])))
+    fh.close()
+
 
 
 
@@ -724,7 +780,7 @@ def main():
     # initialize analysis directory
     if not os.path.isdir(args.outdir):
         print("Creating output directory {}".format(args.outdir))
-        os.mkdir(args.outdir, 0o755)
+        os.makdirs(args.outdir, 0o755)
 
     print("Reading sample metadata file {}".format(args.metadata))
     metadata = process_metadata(args.metadata)
@@ -743,6 +799,7 @@ def main():
     abricate_results = process_abricate(args.abricate)
     abricate = abricate_results['records']
     mapping = abricate_results['mapping']
+
 
     print("Reading MOB-recon contigs file {}".format(args.contigs))
     contigs = process_contigs(args.contigs)
@@ -764,6 +821,7 @@ def main():
     gene_serovar_associations = associate_genes_serovars(abricate,metadata)
     write_gene_results(gene_plasmid_associations, molecule_type_gene_association, gene_serovar_associations,mapping,os.path.join(outdir,"genes.summary.txt"))
 
+    write_replicon_relaxase(mobtyper, os.path.join(outdir,"replicon.table.txt"))
 
 if __name__== '__main__':
     main()
