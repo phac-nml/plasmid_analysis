@@ -49,7 +49,7 @@ def resistance_gene_sunburst(df):
     )
     fig.update_layout(
         font=dict(
-            size=16,
+            size=18,
         ),
     )
     fig.update_layout(
@@ -74,7 +74,7 @@ def resistance_gene_scatter(df):
 
     fig.update_layout(
         font=dict(
-            size=16,
+            size=18,
         ),
     )
     fig.update_layout(
@@ -106,7 +106,7 @@ def plasmid_mobility_scater(df):
         ))
     fig.update_layout(
         font=dict(
-            size=16,
+            size=18,
         ),
     )
     fig.update_layout(
@@ -137,7 +137,7 @@ def plasmid_resistance_scatter(df):
     )
     fig.update_layout(
         font=dict(
-            size=16,
+            size=18,
         ),
     )
     fig.update_layout(
@@ -156,7 +156,7 @@ def serovar_plasmid_frac_bar(df,outfile):
                  )
     fig.update_layout(
         font=dict(
-            size=16,
+            size=18,
         ),
     )
     fig.update_layout(
@@ -208,15 +208,18 @@ def vignette_sunburst(df):
 
     fig.update_layout(
         font=dict(
-            size=16,
+            size=18,
         ),
     )
     fig.update_layout(
         paper_bgcolor='rgba(0,0,0,0)',
         template="simple_white",
-    )
 
+    )
+    fig.update_traces(leaf=dict(opacity=1),    marker_line_width=20)
     return fig
+
+
 
 def main():
     args = parse_args()
@@ -244,12 +247,16 @@ def main():
 
     #Figure 1 - Plasmid prevelance in different serotypes
     fig1 = serovar_plasmid_frac_bar(collapse_serovars(serovar_df),serovar_perc_file)
+
+    fig1.write_image(os.path.join(outdir, "Figure.1.png"), scale=6, width=1600, height=900 )
     fh = open(figure_1,'w')
     fh.write(fig1.to_html())
     fh.close()
 
     #Figure 2 - Plasmid abundance and serovar entropy based on mobility
     fig2 = plasmid_mobility_scater(plasmid_df)
+    #fig2.update_layout(xaxis_range=[-0.1, 4.5])
+    fig2.write_image(os.path.join(outdir, "Figure.2.png"), scale=6, width=1600, height=900 )
     fh = open(figure_2,'w')
     fh.write(fig2.to_html())
     fh.close()
@@ -257,24 +264,31 @@ def main():
 
     #Figure 3 - Sunburst chart of gene abundance and plasmid fraction
     fig3 = resistance_gene_sunburst(gene_df)
+    fig3.write_image(os.path.join(outdir, "Figure.3.png"), scale=6, width=1600, height=1600 )
     fh = open(figure_3,'w')
     fh.write(fig3.to_html())
     fh.close()
 
     #Figure 4 - Serovar and plasmid entropy of resistance genes
     fig4 = resistance_gene_scatter(gene_df)
+    fig4.update_layout(xaxis_range=[-0.1, 3.5])
+    fig4.write_image(os.path.join(outdir, "Figure.4.png"), scale=6, width=1600, height=900 )
+
     fh = open(figure_4,'w')
     fh.write(fig4.to_html())
     fh.close()
 
     #Figure 5 - blaCMY-2 Sunburst chart
     fig5 = vignette_sunburst(spec_gene_df)
+    fig5.write_image(os.path.join(outdir, "Figure.5.png"), scale=6, width=1600, height=1600 )
+    fig5.write_image(os.path.join(outdir, "Figure.5.pdf"), scale=6, width=1600, height=1600)
     fh = open(figure_5,'w')
     fh.write(fig5.to_html())
     fh.close()
 
     #Figure 6 - Plasmid serovar entropy resistance fraction
     fig6 = plasmid_resistance_scatter(plasmid_df)
+    fig6.write_image(os.path.join(outdir, "Figure.6.png"), scale=6, width=1600, height=900 )
     fh = open(figure_6,'w')
     fh.write(fig6.to_html())
     fh.close()

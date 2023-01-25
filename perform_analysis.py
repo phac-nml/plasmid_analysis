@@ -780,7 +780,7 @@ def main():
     # initialize analysis directory
     if not os.path.isdir(args.outdir):
         print("Creating output directory {}".format(args.outdir))
-        os.makdirs(args.outdir, 0o755)
+        os.makedirs(args.outdir, 0o755)
 
     print("Reading sample metadata file {}".format(args.metadata))
     metadata = process_metadata(args.metadata)
