@@ -474,7 +474,7 @@ def mobtyper_plasmid_summarize(mobtyper):
                                                       key=summary[plasmid_id]['serovar'].get)
 
         if len(serovar_counts) > 0 and sum(serovar_counts) >= 10:
-            summary[plasmid_id]['serovar_entropy'] = calc_shanon_entropy(serovar_counts)
+            summary[plasmid_id]['serovar_entropy'] = calc_shanon_entropy(serovar_counts,True)
             summary[plasmid_id]['serovar_shannon_index'] = alpha.shannon(serovar_counts)
             summary[plasmid_id]['serovar_simpson_index'] = alpha.simpson(serovar_counts)
             summary[plasmid_id]['serovar_simpson_index_e'] = alpha.simpson_e(serovar_counts)
@@ -488,7 +488,7 @@ def mobtyper_plasmid_summarize(mobtyper):
 
         taxa_counts = list(human_removed_taxa.values())
         if len(taxa_counts) > 0 and sum(taxa_counts) >= 10:
-            summary[plasmid_id]['taxa_entropy'] = calc_shanon_entropy(taxa_counts)
+            summary[plasmid_id]['taxa_entropy'] = calc_shanon_entropy(taxa_counts,True)
             summary[plasmid_id]['taxa_shannon_index'] = alpha.shannon(taxa_counts)
             summary[plasmid_id]['taxa_simpson_index'] = alpha.simpson(taxa_counts)
             summary[plasmid_id]['taxa_simpson_index_e'] = alpha.simpson_e(taxa_counts)
@@ -621,7 +621,7 @@ def add_diversity_data_to_serovar(serovar_data):
 
         taxa_counts = list(human_removed_taxa.values())
         if len(taxa_counts) > 0 and sum(taxa_counts) >= 10:
-            serovar_data[serovar]['taxa_entropy'] = calc_shanon_entropy(taxa_counts)
+            serovar_data[serovar]['taxa_entropy'] = calc_shanon_entropy(taxa_counts, True)
             serovar_data[serovar]['taxa_shannon_index'] = alpha.shannon(taxa_counts)
             serovar_data[serovar]['taxa_simpson_index'] = alpha.simpson(taxa_counts)
             serovar_data[serovar]['taxa_simpson_index_e'] = alpha.simpson_e(taxa_counts)
@@ -629,7 +629,7 @@ def add_diversity_data_to_serovar(serovar_data):
 
         plasmid_counts = list(serovar_data[serovar]['plasmids'].values())
         if len(plasmid_counts) > 0 and sum(plasmid_counts) >= 10:
-            serovar_data[serovar]['plasmid_entropy'] = calc_shanon_entropy(plasmid_counts)
+            serovar_data[serovar]['plasmid_entropy'] = calc_shanon_entropy(plasmid_counts, True)
             serovar_data[serovar]['plasmid_shannon_index'] = alpha.shannon(plasmid_counts)
             serovar_data[serovar]['plasmid_simpson_index'] = alpha.simpson(plasmid_counts)
             serovar_data[serovar]['plasmid_simpson_index_e'] = alpha.simpson_e(plasmid_counts)
@@ -651,7 +651,7 @@ def write_gene_results(gene_plasmid_associations,molecule_type_gene_association,
 
         if len(gene_plasmid_associations[gene_id]['plasmid']) > 0:
             phomogeneity = calc_homogeneity(list(gene_plasmid_associations[gene_id]['plasmid'].values()))
-            pentropy = calc_shanon_entropy(list(gene_plasmid_associations[gene_id]['plasmid'].values()))
+            pentropy = calc_shanon_entropy(list(gene_plasmid_associations[gene_id]['plasmid'].values()),True)
         else:
             phomogeneity = -1
             pentropy = -1
@@ -660,7 +660,7 @@ def write_gene_results(gene_plasmid_associations,molecule_type_gene_association,
             human_proportion = gene_serovar_associations[gene_id]['sample_source']['human'] / \
                                (gene_serovar_associations[gene_id]['sample_source']['human'] +
                                 gene_serovar_associations[gene_id]['sample_source']['non-human'])
-            sentropy = calc_shanon_entropy(list(gene_serovar_associations[gene_id]['serovar'].values()))
+            sentropy = calc_shanon_entropy(list(gene_serovar_associations[gene_id]['serovar'].values()),True)
         else:
             shomogeneity = -1
             human_proportion = -1
