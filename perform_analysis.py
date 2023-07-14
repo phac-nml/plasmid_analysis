@@ -30,18 +30,6 @@ def calc_shanon_entropy(value_list ,normalize=False):
     return e
 
 
-def calc_shanon_entropy2(value_list,normalize=False):
-    total = sum(value_list)
-    values = []
-    for v in value_list:
-        values.append(v/total)
-    e = entropy(values)
-    if normalize:
-        values = [1] * len(value_list)
-        e = e / (entropy(values))
-
-    return e
-
 def calc_homogeneity(value_list):
     return 1 - simpson(value_list)
 
